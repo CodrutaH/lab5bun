@@ -9,11 +9,11 @@ namespace Lab2.Servies
 {
     public interface IExpenseService
     {
-        IEnumerable<GetExpenseDto> GetAll(DateTime? from = null, DateTime? to = null, TypeEnum? type = null);
+        PaginatedList<GetExpenseDto> GetAll(int page, DateTime? from = null, DateTime? to = null, TypeEnum? type = null);
 
         Expense GetById(int id);
 
-        Expense Create(PostExpenseDto expenseDto);
+        Expense Create(PostExpenseDto expenseDto, User addedBy);
 
         Expense Upsert(int id, Expense expense);
 

@@ -16,15 +16,15 @@ namespace Lab2.DTOs
 
         public int ExpenseId { get; set; }
 
-        //public static GetCommentsDto DtoFromModel(Comment comment)
-        //{
-        //    return new GetCommentsDto
-        //    {
-        //        Id = comment.Id,
-        //        Text = comment.Text,
-        //        Important = comment.Important,
-        //        ExpenseId = comment.ExpenseId
-        //    };
-        //}
+        public static GetCommentsDto DtoFromModel(Comment comment)
+        {
+            return new GetCommentsDto
+            {
+                Id = comment.Id,
+                Text = comment.Text,
+                Important = comment.Important,
+                ExpenseId = comment.Expense.Id
+            };
+        }
     }
 }

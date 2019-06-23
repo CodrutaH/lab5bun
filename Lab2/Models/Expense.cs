@@ -29,5 +29,7 @@ namespace Lab2.Models
         public TypeEnum Type { get; set; }
 
         public List<Comment> Comments { get; set; }
+        public User Owner { get; set; }
+
     }
 }

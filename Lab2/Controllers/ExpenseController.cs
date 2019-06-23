@@ -1,6 +1,7 @@
 ﻿using Lab2.DTOs;
 using Lab2.Models;
 using Lab2.Servies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -16,10 +17,11 @@ namespace Lab2.Controllers
     public class ExpenseController : ControllerBase
     {
         private IExpenseService expenseService;
-
-        public ExpenseController(IExpenseService service)
+        private IUserService usersService;
+        public ExpenseController(IExpenseService service, IUserService usersService)
         {
             this.expenseService = service;
+            this.usersService = usersService;
         }
         /// <summary>
         /// Gets all the expenses.
@@ -27,11 +29,16 @@ namespace Lab2.Controllers
         /// <param name="from">Optional, filter by start date</param>
         /// <param name="to">Optional, filter by end date</param>
         /// <param name="type">Optional, filter by type of expense</param>
+        /// /// <param name="page">Optional, filter by type of expense</param>
         /// <returns>A list of Expense Objects</returns>
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+       // [Authorize(Roles = "Admin,Regular")]
         [HttpGet]
-        public IEnumerable<GetExpenseDto> GetAll([FromQuery]DateTime? from, [FromQuery]DateTime? to, [FromQuery]TypeEnum? type)
+        public PaginatedList<GetExpenseDto> GetAll([FromQuery]DateTime? from, [FromQuery]DateTime? to, [FromQuery]TypeEnum? type, [FromQuery]int page = 1)
         {
-            return expenseService.GetAll(from, to, type);
+            page = Math.Max(page, 1);
+            return expenseService.GetAll(page, from, to, type);
         }
 
         /// <summary>
@@ -39,6 +46,9 @@ namespace Lab2.Controllers
         /// </summary>
         /// <param name="id">Get expense by id</param>
         /// <returns>An Expense Object</returns>
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        //[Authorize(Roles = "Admin,Regular")]
         [HttpGet("{id}")]
         public IActionResult GetExpense(int id)
         {
@@ -82,10 +92,12 @@ namespace Lab2.Controllers
         /// <param name="expenseDto">The expense to add.</param>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [Authorize(Roles = "Admin,Regular")]
         [HttpPost]
         public void Post([FromBody] PostExpenseDto expenseDto)
         {
-            expenseService.Create(expenseDto);
+            User addedBy = usersService.GetCurrentUser(HttpContext);
+            expenseService.Create(expenseDto,addedBy);
         }
 
         /// <summary>
@@ -96,6 +108,7 @@ namespace Lab2.Controllers
         /// <returns>The updated expense.</returns>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [Authorize(Roles = "Admin,Regular")]
         [HttpPut("{id}")]
         public IActionResult Put(int id, [FromBody] Expense expense)
         {
@@ -108,7 +121,12 @@ namespace Lab2.Controllers
         /// </summary>
         /// <param name="id">The id of an expense</param>
         /// <returns>The deleted expense.</returns>
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [Authorize(Roles = "Admin,Regular")]
         [HttpDelete("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public IActionResult Delete(int id)
         {
             var result = expenseService.Delete(id);
